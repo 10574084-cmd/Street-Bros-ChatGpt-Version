@@ -1,14 +1,18 @@
 # Street Bros — SNES Edition
 
-A Super Mario World ROM-hack project exploring a Street Fighter-inspired
-character-select and versus experience.
+A Super Mario World ROM-hack project exploring an original arcade-fighter
+character and a versus-mode prototype.
 
 ## Current status
 
-**Foundation build only.** The repository now has an Asar + Floating IPS build
-pipeline. The first test patch changes the SNES internal cartridge title to
-`STREET BROS CHATGPT`, proving the assembler-to-BPS pipeline. It does not
-yet add playable fighters, versus mode, new maps, or four-player support.
+**Visual palette prototype.** The BPS patch changes the cartridge's internal
+title to `STREET BROS CHATGPT` and changes the in-game player palette to a
+blue-and-white outfit with a gold accent. The player is still Mario's original
+silhouette and animations. There is no new playable fighter, character select,
+versus mode, new map, or four-player support yet.
+
+The next milestone is an original fighter sprite that fits Mario World's tile
+layout. The project will not copy Street Fighter II's exact character sprites.
 
 ## Build
 
@@ -25,18 +29,17 @@ the patch plus build metadata.
 
 ## Planned development
 
-- Inspect the original game routines and map data before changing gameplay.
-- Add a character-selection screen and original fighter graphics.
+- Build an original player sprite that fits the existing animation/tile layout.
+- Add a character-selection screen.
 - Prototype one-versus-one mode.
 - Evaluate whether a four-controller adapter (SNES Multitap) can be supported
   by the game's input and memory constraints.
-- Expand the roster and special-move logic only after the first playable
-  prototype is stable.
+- Expand the roster and game modes after the first playable prototype is stable.
 
 ## Project layout
 
 - `asm/main.asm` — Asar entry point.
-- `asm/features/ryu_palette.asm` — first in-game palette prototype.
+- `asm/features/ryu_palette.asm` — blue-and-white player palette prototype.
 - `asm/features/` — future gameplay patches.
 - `scripts/validate_rom.py` — verifies the expected base-ROM format.
 - `.github/workflows/build-bps.yml` — assembles and packages a BPS patch.
