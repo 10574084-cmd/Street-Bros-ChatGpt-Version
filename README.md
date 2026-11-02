@@ -36,6 +36,7 @@ the patch plus build metadata.
 ## Project layout
 
 - `asm/main.asm` — Asar entry point.
+- `asm/features/ryu_palette.asm` — first in-game palette prototype.
 - `asm/features/` — future gameplay patches.
 - `scripts/validate_rom.py` — verifies the expected base-ROM format.
 - `.github/workflows/build-bps.yml` — assembles and packages a BPS patch.
