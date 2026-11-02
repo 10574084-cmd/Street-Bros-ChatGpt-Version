@@ -106,3 +106,34 @@ jobs:
             dist/build-info.txt
           if-no-files-found: error
           retention-days: 30
+
+  scan-sf2-gfx:
+    name: Scan Street Fighter SNES graphics
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out project
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install image tooling
+        run: python -m pip install --disable-pip-version-check pillow
+
+      - name: Scan raw SNES 4bpp tile regions
+        run: |
+          python scripts/scan_sf2_graphics.py \
+            "Super Street Fighter II (USA).sfc" \
+            dist/sf2-gfx
+
+      - name: Upload graphics analysis
+        uses: actions/upload-artifact@v4
+        with:
+          name: SF2-GFX-Analysis
+          path: |
+            dist/sf2-gfx/sf2_raw_4bpp_overview.png
+            dist/sf2-gfx/sf2-gfx-report.json
+          if-no-files-found: error
+          retention-days: 7
