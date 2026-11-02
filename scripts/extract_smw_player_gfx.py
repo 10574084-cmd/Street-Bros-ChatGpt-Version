@@ -41,7 +41,8 @@ def decompress_lc_lz2(src: bytes, limit: int = 0x20000) -> bytes:
         elif mode == 2:
             a, b = src[i], src[i+1]
             i += 2
-            out.extend(bytes((a, b))[(n & 1):(n & 1)+1] for n in range(size))
+            for n in range(size):
+                out.append(a if (n & 1) == 0 else b)
         elif mode == 3:
             value = src[i]
             i += 1
