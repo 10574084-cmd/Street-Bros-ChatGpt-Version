@@ -4,6 +4,7 @@ from __future__ import annotations
 import json
 import sys
 import zlib
+import hashlib
 from pathlib import Path
 
 import numpy as np
@@ -77,13 +78,36 @@ report = {
     "rom": ROM.name,
     "size": len(data),
     "crc32": f"{zlib.crc32(data) & 0xFFFFFFFF:08X}",
+    "sha1": hashlib.sha1(data).hexdigest(),
     "format": "HiROM, raw 4bpp tile scan",
     "pages": pages,
     "top_windows": windows[:100],
     "note": "Heuristic candidates only; verify animation/tilemap data before using a block.",
 }
 (OUT / "sf2-gfx-report.json").write_text(json.dumps(report, indent=2))
+
+# Contact sheet of the strongest 0x2000-byte candidate windows.
+# Each panel is a 16x16 arrangement of raw 8x8 SNES tiles.
+top = windows[:100]
+panel_w, panel_h, scale = 128, 128, 2
+cols, rows = 10, (len(top)+9)//10
+contact = Image.new("RGB", (cols*panel_w, rows*(panel_h+18)), (20,20,20))
+cdraw = ImageDraw.Draw(contact)
+for n, item in enumerate(top):
+    start_tile = int(item["offset"], 16)//32
+    block = pixels[start_tile:start_tile+256]
+    if len(block) < 256:
+        continue
+    panel = Image.fromarray(block.reshape(16,16,8,8).transpose(0,2,1,3).reshape(128,128), mode="P")
+    panel.putpalette(palette)
+    panel = panel.convert("RGB").resize((panel_w,panel_h), Image.Resampling.NEAREST)
+    x, y = (n%cols)*panel_w, (n//cols)*(panel_h+18)
+    contact.paste(panel, (x,y+18))
+    cdraw.text((x+2,y+2), f"{item['offset']}  u{item['unique']}", fill=(255,255,0))
+contact.save(OUT / "sf2-gfx-windows.png", optimize=True)
+
 print(f"ROM CRC32: {report['crc32']}")
+print(f"ROM SHA1: {report['sha1']}")
 print("Top raw 4bpp candidate windows:")
 for w in windows[:30]:
     print(f'{w["offset"]}: unique={w["unique"]}/256 coverage={w["pixel_coverage"]} score={w["score"]}')
