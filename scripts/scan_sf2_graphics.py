@@ -54,8 +54,7 @@ for page in range(64):
     start = page * 0x10000
     block = data[start:start+0x10000]
     tiles = [block[i:i+32] for i in range(0, len(block), 32)]
-    img = Image.new("P", (page_w, page_h), 0)
-    img.putpalette(palette)
+    page_pixels = bytearray(page_w * page_h)
     nonblank = 0
     unique = set()
     px_nonzero = 0
@@ -68,13 +67,13 @@ for page in range(64):
             unique.add(raw)
         pix = decode_tile(raw)
         px_nonzero += sum(1 for v in pix if v)
-        x = (idx % 32) * 8
-        y = (idx // 32) * 8
-        img.putdata([]) if False else None
-        # Paste the tile into the page image using a tiny indexed tile.
-        tile_img = Image.frombytes("P", (8, 8), bytes(pix))
-        tile_img.putpalette(palette)
-        img.paste(tile_img, (x, y))
+        tx = (idx % 32) * 8
+        ty = (idx // 32) * 8
+        for row in range(8):
+            dst = (ty + row) * page_w + tx
+            page_pixels[dst:dst+8] = bytes(pix[row*8:row*8+8])
+    img = Image.frombytes("P", (page_w, page_h), bytes(page_pixels))
+    img.putpalette(palette)
     # Label each page with its exact ROM offset in the aggregate overview.
     page_rgb = img.convert("RGB")
     ox, oy = (page % 8)*page_w, (page // 8)*page_h
