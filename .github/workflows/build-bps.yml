@@ -1,0 +1,109 @@
+name: Build Street Bros BPS
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+      - romhack-foundation
+    paths:
+      - "asm/**"
+      - "scripts/**"
+      - ".github/workflows/build-bps.yml"
+      - "README.md"
+  pull_request:
+    branches:
+      - main
+    paths:
+      - "asm/**"
+      - "scripts/**"
+      - ".github/workflows/build-bps.yml"
+      - "README.md"
+
+permissions:
+  contents: read
+
+jobs:
+  build-bps:
+    name: Assemble ROM and create BPS patch
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out project
+        uses: actions/checkout@v4
+
+      - name: Set up build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential cmake git python3
+
+      - name: Validate base ROM
+        run: python3 scripts/validate_rom.py "Super Mario World (USA).sfc"
+
+      - name: Build Asar
+        shell: bash
+        run: |
+          git clone --depth 1 https://github.com/RPGHacker/asar.git "$RUNNER_TEMP/asar-src"
+          cmake -S "$RUNNER_TEMP/asar-src/src" -B "$RUNNER_TEMP/asar-build" -DCMAKE_BUILD_TYPE=Release
+          cmake --build "$RUNNER_TEMP/asar-build" --config Release --parallel 2
+          ASAR_BIN="$(find "$RUNNER_TEMP/asar-build" -type f -name asar -perm -111 | head -n 1)"
+          if [ -z "$ASAR_BIN" ]; then
+            echo "::error::Asar executable was not produced."
+            find "$RUNNER_TEMP/asar-build" -maxdepth 4 -type f
+            exit 1
+          fi
+          echo "ASAR_BIN=$ASAR_BIN" >> "$GITHUB_ENV"
+
+      - name: Build Floating IPS
+        shell: bash
+        run: |
+          git clone --depth 1 https://github.com/Sir-Walrus/Flips.git "$RUNNER_TEMP/flips-src"
+          cd "$RUNNER_TEMP/flips-src"
+          # Actions only needs the command-line patcher; avoid GTK desktop dependencies.
+          make TARGET=cli CFLAGS="-O2"
+          test -x ./flips
+          echo "FLIPS_BIN=$RUNNER_TEMP/flips-src/flips" >> "$GITHUB_ENV"
+
+      - name: Assemble ROM patch
+        shell: bash
+        run: |
+          mkdir -p build dist
+          cp "Super Mario World (USA).sfc" build/Street-Bros-working.sfc
+          "$ASAR_BIN" asm/main.asm build/Street-Bros-working.sfc
+          test -s build/Street-Bros-working.sfc
+
+      - name: Create and validate BPS patch
+        shell: bash
+        run: |
+          "$FLIPS_BIN" --create --bps-delta \
+            "Super Mario World (USA).sfc" \
+            "build/Street-Bros-working.sfc" \
+            "dist/Street-Bros-Foundation.bps"
+
+          python3 - <<'PY'
+          from pathlib import Path
+          patch = Path("dist/Street-Bros-Foundation.bps")
+          data = patch.read_bytes()
+          if len(data) < 16 or data[:4] != b"BPS1":
+              raise SystemExit("ERROR: generated file is not a valid BPS patch.")
+          print(f"BPS OK: {patch} ({len(data)} bytes)")
+          PY
+
+          {
+            echo "Project: Street Bros — SNES Edition"
+            echo "Build: original blue-and-white player palette prototype"
+            echo "Base ROM: Super Mario World (USA), unheadered 512 KiB"
+            echo "Base SHA-256: $(sha256sum 'Super Mario World (USA).sfc' | cut -d ' ' -f 1)"
+            echo "Patched ROM SHA-256: $(sha256sum 'build/Street-Bros-working.sfc' | cut -d ' ' -f 1)"
+            echo "BPS SHA-256: $(sha256sum 'dist/Street-Bros-Foundation.bps' | cut -d ' ' -f 1)"
+          } > dist/build-info.txt
+
+      - name: Upload BPS patch
+        uses: actions/upload-artifact@v4
+        with:
+          name: Street-Bros-BPS
+          path: |
+            dist/Street-Bros-Foundation.bps
+            dist/build-info.txt
+          if-no-files-found: error
+          retention-days: 30
+
