@@ -1,0 +1,10 @@
+# Generated ROMs and patches
+/build/
+/dist/
+*.bps
+*.ips
+*.sfc.tmp
+*.smc.tmp
+
+# Local tool builds
+/tools/
