@@ -1,26 +1,21 @@
-; Ryu-inspired color prototype for the existing player sprite.
-; This is a palette edit only: it does not replace Mario's graphics or moves.
-;
-; SMW's normal player palette is stored at PC $0032C8 (LoROM $00:B2C8).
-; The overworld player palette is stored at PC $00359C (LoROM $00:B59C).
-;
-; Colors below are SNES BGR555 little-endian values.
-; Keep skin/shadow colors mostly intact; switch the main clothing colors to
-; white and blue, with a red accent.
+; Original arcade-fighter palette prototype for the existing player sprite.
+; Blue-and-white outfit with a gold accent. This changes colors only; it does
+; not copy Street Fighter character graphics or change the game's move logic.
 
-; In-level normal Mario palette (20 bytes).
+; Normal player palette, 10 SNES BGR555 colors in little-endian order.
+; Keep the first skin tone; replace the main red/dark-red clothing colors.
 org $00B2C8
-db $5F,$63  ; skin highlight
-db $1D,$58  ; dark red accent
-db $0A,$00  ; darkest shade
-db $9B,$7B  ; gi cloth: off-white
-db $E3,$5C  ; gi shadow: deep blue
-db $08,$7E  ; gi highlight: bright blue
-db $70,$67  ; retained midtone
-db $32,$08  ; dark red detail
-db $7F,$10  ; red headband accent
-db $FF,$03  ; retained yellow detail
+db $5F,$63  ; skin tone / highlight (retained)
+db $00,$7C  ; deep blue
+db $00,$40  ; navy shadow
+db $FF,$7F  ; white cloth
+db $E0,$7F  ; light cyan cloth highlight
+db $10,$40  ; dark blue detail
+db $FF,$7F  ; white accent
+db $FF,$03  ; gold sash detail
+db $1F,$00  ; warm red accent
+db $FF,$03  ; gold highlight
 
 ; Overworld player palette (two colors).
 org $00B59C
-db $E3,$5C,$08,$7E
+db $00,$7C,$FF,$7F
