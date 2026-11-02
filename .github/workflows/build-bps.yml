@@ -134,6 +134,7 @@ jobs:
           name: SF2-GFX-Analysis
           path: |
             dist/sf2-gfx/sf2_raw_4bpp_overview.png
+            dist/sf2-gfx/sf2-gfx-windows.png
             dist/sf2-gfx/sf2-gfx-report.json
           if-no-files-found: error
           retention-days: 7
