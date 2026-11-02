@@ -58,7 +58,8 @@ jobs:
         run: |
           git clone --depth 1 https://github.com/Sir-Walrus/Flips.git "$RUNNER_TEMP/flips-src"
           cd "$RUNNER_TEMP/flips-src"
-          ./make-linux.sh --profile=no
+          # Actions only needs the command-line patcher; avoid GTK desktop dependencies.
+          make TARGET=cli CFLAGS="-O2"
           test -x ./flips
           echo "FLIPS_BIN=$RUNNER_TEMP/flips-src/flips" >> "$GITHUB_ENV"
 
