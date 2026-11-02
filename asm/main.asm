@@ -8,7 +8,7 @@
 ; Future gameplay patches belong in separate files under asm/features/.
 lorom
 
-incsrc "features/ryu_palette.asm"
+incsrc "features/fighter_palette.asm"
 
 ; The 21-byte internal title field in the LoROM header.
 org $00FFC0
