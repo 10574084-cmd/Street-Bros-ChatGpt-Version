@@ -137,3 +137,34 @@ jobs:
             dist/sf2-gfx/sf2-gfx-report.json
           if-no-files-found: error
           retention-days: 7
+
+  extract-smw-player-gfx:
+    name: Extract Mario World player graphics layout
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out project
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install image tooling
+        run: python -m pip install --disable-pip-version-check pillow
+
+      - name: Extract LC_LZ2 player graphics
+        run: |
+          python scripts/extract_smw_player_gfx.py \
+            "Super Mario World (USA).sfc" \
+            dist/smw-player-gfx
+
+      - name: Upload player graphics layout
+        uses: actions/upload-artifact@v4
+        with:
+          name: SMW-Player-GFX-Layout
+          path: |
+            dist/smw-player-gfx/smw-player-tiles.png
+            dist/smw-player-gfx/report.json
+          if-no-files-found: error
+          retention-days: 14
