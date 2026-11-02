@@ -11,6 +11,14 @@ on:
       - "scripts/**"
       - ".github/workflows/build-bps.yml"
       - "README.md"
+  pull_request:
+    branches:
+      - main
+    paths:
+      - "asm/**"
+      - "scripts/**"
+      - ".github/workflows/build-bps.yml"
+      - "README.md"
 
 permissions:
   contents: read
